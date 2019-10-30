@@ -376,6 +376,7 @@ export function setConsentConfig(config) {
   }
   if (!addedConsentHook) {
     $$PREBID_GLOBAL$$.requestBids.before(requestBidsHook, 50);
+    $$PREBID_GLOBAL$$.liveConnectHook.before(requestBidsHook, 50);
   }
   addedConsentHook = true;
 }

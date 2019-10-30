@@ -1,4 +1,3 @@
-
 const sharedWhiteList = [
   "core-js/library/fn/array/find", // no ie11
   "core-js/library/fn/array/includes", // no ie11
@@ -12,7 +11,8 @@ module.exports = {
   'modules': [
     ...sharedWhiteList,
     'jsencrypt',
-    'crypto-js'
+    'crypto-js',
+    'ulid'
   ],
   'src': [
     ...sharedWhiteList,
