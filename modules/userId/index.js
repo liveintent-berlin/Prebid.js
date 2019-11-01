@@ -106,6 +106,7 @@ import CONSTANTS from '../../src/constants.json';
 import {module} from '../../src/hook';
 import {unifiedIdSubmodule} from './unifiedIdSystem.js';
 import {pubCommonIdSubmodule} from './pubCommonIdSystem.js';
+import {hasGDPRConsent} from './gdprUtils';
 
 const MODULE_NAME = 'User ID';
 const COOKIE = 'cookie';
@@ -197,23 +198,6 @@ function getStoredValue(storage, key = undefined) {
     utils.logError(e);
   }
   return storedValue;
-}
-
-/**
- * test if consent module is present, applies, and is valid for local storage or cookies (purpose 1)
- * @param {ConsentData} consentData
- * @returns {boolean}
- */
-function hasGDPRConsent(consentData) {
-  if (consentData && typeof consentData.gdprApplies === 'boolean' && consentData.gdprApplies) {
-    if (!consentData.consentString) {
-      return false;
-    }
-    if (consentData.vendorData && consentData.vendorData.purposeConsents && consentData.vendorData.purposeConsents['1'] === false) {
-      return false;
-    }
-  }
-  return true;
 }
 
 /**

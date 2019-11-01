@@ -12,7 +12,7 @@ const ulid = factory(prng);
 const COOKIE = 'cookie';
 const LOCAL_STORAGE = 'html5';
 
-const LIVE_PIXEL_URL = '//p.liadm.com/p';
+const LIVE_PIXEL_URL = '//rp.liadm.com/p';
 const CONFIG = {
   SCRAPED_IDENTIFIERS: 'scrapedIdentifiers',
   PROVIDED_FIRST_PARTY_IDENTIFIER: 'providedFirstPartyIdentifier',
@@ -33,8 +33,12 @@ const CONFIG = {
   }
 };
 
-// priority value 40 will load after consentManagement with a priority of 50
-$$PREBID_GLOBAL$$.requestBids.before(liveConnectHook, 40);
+init();
+
+export function init() {
+  // priority value 40 will load after consentManagement with a priority of 50
+  $$PREBID_GLOBAL$$.requestBids.before(liveConnectHook, 40);
+}
 
 $$PREBID_GLOBAL$$.liveConnect = function () {
   $$PREBID_GLOBAL$$.liveConnectHook({});
@@ -44,21 +48,24 @@ $$PREBID_GLOBAL$$.liveConnectHook = hook('async', function () {
   liveConnectHook();
 }, 'liveConnect');
 
+let isPixelFired = false;
 
-let isLiveConnectInitialized = false;
+export function resetPixel() {
+  isPixelFired = false;
+}
 
 function liveConnectHook() {
-  if (!isLiveConnectInitialized) {
+  if (!isPixelFired) {
     if (hasGDPRConsent(gdprDataHandler.getConsentData())) {
       sendLiveConnectPixel();
     }
-    isLiveConnectInitialized = true;
+    isPixelFired = true;
   }
 }
 
 function sendLiveConnectPixel() {
   const validConfig = validateConfig(config.getConfig('liveConnect'));
-  const pageUrl = getPageUrl();
+  const pageUrl = encodeURIComponent(getPageUrl());
   const duid = getDuid(validConfig);
   let pixelUri = `${LIVE_PIXEL_URL}?duid=${duid}&tna=$prebid.version$&pu=${pageUrl}`;
 
@@ -79,21 +86,23 @@ function validateConfig(config) {
   const validConfig = {
     storage: {}
   };
+  validConfig.storage[CONFIG.STORAGE.TYPE.KEY] = CONFIG.STORAGE.TYPE.DEFAULT;
+  validConfig.storage[CONFIG.STORAGE.NAME.KEY] = CONFIG.STORAGE.NAME.DEFAULT;
+  validConfig.storage[CONFIG.STORAGE.EXPIRES.KEY] = CONFIG.STORAGE.EXPIRES.DEFAULT;
+
+  if (!config) return validConfig;
+
   validConfig[CONFIG.SCRAPED_IDENTIFIERS] = validOrDefault(config[CONFIG.SCRAPED_IDENTIFIERS], isArrayOfStrings, []);
   validConfig[CONFIG.PROVIDED_FIRST_PARTY_IDENTIFIER] = validOrDefault(config[CONFIG.PROVIDED_FIRST_PARTY_IDENTIFIER], utils.isStr, null);
 
   if (utils.isPlainObject(config.storage)) {
     validConfig.storage[CONFIG.STORAGE.TYPE.KEY] = validOrDefault(
-      config.storage[CONFIG.PROVIDED_FIRST_PARTY_IDENTIFIER],
-      v => utils.isStr(v) && CONFIG.STORAGE.TYPE.ALLOWED.contains(v),
+      config.storage[CONFIG.STORAGE.TYPE.KEY],
+      v => utils.isStr(v) && CONFIG.STORAGE.TYPE.ALLOWED.includes(v),
       CONFIG.STORAGE.TYPE.DEFAULT
     );
     validConfig.storage[CONFIG.STORAGE.NAME.KEY] = validOrDefault(config.storage[CONFIG.STORAGE.NAME.KEY], utils.isStr, CONFIG.STORAGE.NAME.DEFAULT);
     validConfig.storage[CONFIG.STORAGE.EXPIRES.KEY] = validOrDefault(config.storage[CONFIG.STORAGE.EXPIRES.KEY], utils.isNumber, CONFIG.STORAGE.EXPIRES.DEFAULT);
-  } else {
-    validConfig.storage[CONFIG.STORAGE.TYPE.KEY] = CONFIG.STORAGE.TYPE.DEFAULT;
-    validConfig.storage[CONFIG.STORAGE.NAME.KEY] = CONFIG.STORAGE.NAME.DEFAULT;
-    validConfig.storage[CONFIG.STORAGE.EXPIRES.KEY] = CONFIG.STORAGE.EXPIRES.DEFAULT;
   }
   return validConfig;
 }
@@ -185,24 +194,29 @@ function storeCookieOnEtldPlus1(name, value, expiresStr) {
 function getProvidedFpiQueryParams(validConfig) {
   let fpi;
   if (validConfig[CONFIG.PROVIDED_FIRST_PARTY_IDENTIFIER]) {
-    const providedFirstPartyIdentifier = utils.getCookie(validConfig[CONFIG.PROVIDED_FIRST_PARTY_IDENTIFIER]);
+    const providedFirstPartyIdentifier = getFromCookieOrLocalStorage(validConfig[CONFIG.PROVIDED_FIRST_PARTY_IDENTIFIER]);
     if (providedFirstPartyIdentifier) {
-      fpi = `pfpi=${providedFirstPartyIdentifier}&pfn=${validConfig[CONFIG.PROVIDED_FIRST_PARTY_IDENTIFIER]}`;
+      fpi = `pfpi=${providedFirstPartyIdentifier}&fpn=${validConfig[CONFIG.PROVIDED_FIRST_PARTY_IDENTIFIER]}`;
     }
   }
   return fpi;
+}
+
+function getFromCookieOrLocalStorage(identifierName) {
+  let identifierValue = utils.getCookie(identifierName);
+  if (!identifierValue) {
+    identifierValue = localStorage.getItem(identifierName);
+  }
+  return identifierValue;
 }
 
 function getScrapedIdentifiers(validConfig) {
   let identifiers;
   if (validConfig[CONFIG.SCRAPED_IDENTIFIERS]) {
     identifiers = validConfig[CONFIG.SCRAPED_IDENTIFIERS]
-      .map(identifier => {
-        let identifierValue = utils.getCookie(identifier);
-        if (!identifierValue) {
-          identifierValue = localStorage.getItem(identifier);
-        }
-        return identifierValue ? `ext_${identifier}=${identifierValue}` : '';
+      .map(identifierName => {
+        let identifierValue = getFromCookieOrLocalStorage(identifierName);
+        return identifierValue ? `ext_${identifierName}=${identifierValue}` : '';
       })
       .filter(param => param && param.length > 0)
       .join('&');

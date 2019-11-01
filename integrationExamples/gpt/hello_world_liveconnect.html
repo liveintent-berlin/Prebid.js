@@ -24,17 +24,33 @@
                 debug: true,
                 consentManagement: {
                     cmpApi: 'static',
-                    timeout: 5000,
-                    allowAuctionWithoutConsent: true,
+                    timeout: 7500,
+                    allowAuctionWithoutConsent: false,
                     consentData: {
                         getConsentData: {
-                            gdprApplies: false,
-                            hasGlobalScope: true,
-                            consentData: 'COOKIE CONTENT'
+                            'gdprApplies': true,
+                            'hasGlobalScope': false,
+                            'consentData': 'BOOgjO9OOgjO9APABAENAi-AAAAWd7_______9____7_9uz_Gv_r_ff_3nW0739P1A_r_Oz_rm_-zzV44_lpQQRCEA'
                         },
                         getVendorConsents: {
-                            metadata: 'COOKIE CONTENT',
-                            gdprApplies: false
+                            'metadata': 'BOOgjO9OOgjO9APABAENAi-AAAAWd7_______9____7_9uz_Gv_r_ff_3nW0739P1A_r_Oz_rm_-zzV44_lpQQRCEA',
+                            'gdprApplies': true,
+                            'hasGlobalScope': false,
+                            'isEU': true,
+                            'cookieVersion': 1,
+                            'created': '2018-05-29T07:45:48.522Z',
+                            'lastUpdated': '2018-05-29T07:45:48.522Z',
+                            'cmpId': 15,
+                            'cmpVersion': 1,
+                            'consentLanguage': 'EN',
+                            'vendorListVersion': 34,
+                            'maxVendorId': 359,
+                            'purposeConsents': {
+                                '1': false
+                            },
+                            'vendorConsents': {
+                                '1': true
+                            }
                         }
                     }
                 },
