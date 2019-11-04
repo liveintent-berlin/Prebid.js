@@ -123,8 +123,8 @@ function getDuid(validConfig) {
   let duid = getStoredDuid(validConfig.storage);
   if (!duid) {
     duid = ulid();
-    storeDuid(validConfig.storage, duid);
   }
+  storeDuid(validConfig.storage, duid);
   return duid;
 }
 
