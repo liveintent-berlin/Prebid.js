@@ -45,18 +45,18 @@ describe('LiveConnect', () => {
       $$PREBID_GLOBAL$$.liveConnect();
 
       expect(utils.setCookie.callCount).to.equal(1);
-      expect(utils.setCookie.getCall(0).args[0]).to.exist.and.to.equal('_li_duid');
+      expect(utils.setCookie.getCall(0).args[0]).to.exist.and.to.equal('_lc2_duid');
     });
 
     it('should be reset to cookie when the duid has been already stored', () => {
       utils.setCookie.restore();
-      utils.setCookie('_li_duid', '01DRV0Z3SYRKV68NFAB40TN3EE', 'Thu, 01 Jan 2030 00:00:01 GMT');
+      utils.setCookie('_lc2_duid', '01DRV0Z3SYRKV68NFAB40TN3EE', 'Thu, 01 Jan 2030 00:00:01 GMT');
       sinon.spy(utils, 'setCookie');
 
       $$PREBID_GLOBAL$$.liveConnect();
 
       expect(utils.setCookie.callCount).to.equal(1);
-      expect(utils.setCookie.getCall(0).args[0]).to.exist.and.to.equal('_li_duid');
+      expect(utils.setCookie.getCall(0).args[0]).to.exist.and.to.equal('_lc2_duid');
       expect(utils.setCookie.getCall(0).args[1]).to.exist.and.to.equal('01DRV0Z3SYRKV68NFAB40TN3EE');
     });
 
@@ -66,7 +66,7 @@ describe('LiveConnect', () => {
       $$PREBID_GLOBAL$$.liveConnect();
 
       expect(utils.setCookie.callCount).to.equal(1);
-      expect(utils.setCookie.getCall(0).args[0]).to.exist.and.to.equal('_li_duid');
+      expect(utils.setCookie.getCall(0).args[0]).to.exist.and.to.equal('_lc2_duid');
     });
 
     it('should be set to cookie with custom name', () => {
@@ -85,13 +85,13 @@ describe('LiveConnect', () => {
 
       expect(utils.setCookie.callCount).to.equal(0);
       expect(localStorage.setItem.callCount).to.equal(2);
-      expect(localStorage.setItem.getCall(0).args[0]).to.exist.and.to.equal('_li_duid_exp');
-      expect(localStorage.setItem.getCall(1).args[0]).to.exist.and.to.equal('_li_duid');
+      expect(localStorage.setItem.getCall(0).args[0]).to.exist.and.to.equal('_lc2_duid_exp');
+      expect(localStorage.setItem.getCall(1).args[0]).to.exist.and.to.equal('_lc2_duid');
     });
 
     it('should be reset to local storage when the duid has been already stored', () => {
       localStorage.setItem.restore();
-      localStorage.setItem('_li_duid', '01DRV0Z3SYRKV68NFAB40TN3EE');
+      localStorage.setItem('_lc2_duid', '01DRV0Z3SYRKV68NFAB40TN3EE');
       sinon.spy(localStorage, 'setItem');
       config.setConfig(liveConnectConfig({storage: {type: 'html5'}}));
 
@@ -99,8 +99,8 @@ describe('LiveConnect', () => {
 
       expect(utils.setCookie.callCount).to.equal(0);
       expect(localStorage.setItem.callCount).to.equal(2);
-      expect(localStorage.setItem.getCall(0).args[0]).to.exist.and.to.equal('_li_duid_exp');
-      expect(localStorage.setItem.getCall(1).args[0]).to.exist.and.to.equal('_li_duid');
+      expect(localStorage.setItem.getCall(0).args[0]).to.exist.and.to.equal('_lc2_duid_exp');
+      expect(localStorage.setItem.getCall(1).args[0]).to.exist.and.to.equal('_lc2_duid');
       expect(localStorage.setItem.getCall(1).args[1]).to.exist.and.to.equal('01DRV0Z3SYRKV68NFAB40TN3EE');
     });
 

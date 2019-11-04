@@ -31,7 +31,6 @@
  * @property {NotValidatedLiveConnectStorageConfig} storage - specifies way to store the liveConnect identifier
  */
 
-
 import {hook} from '../src/hook';
 import {config} from '../src/config';
 import * as utils from '../src/utils';
@@ -60,7 +59,7 @@ const CONFIG = {
     },
     NAME: {
       KEY: 'name',
-      DEFAULT: '_li_duid'
+      DEFAULT: '_lc2_duid'
     },
     EXPIRES: {
       KEY: 'expires',
