@@ -1,3 +1,37 @@
+/**
+ * This module adds tracking support for LiveIntent's LiveConnect
+ * @module modules/liveConnect
+ */
+
+/**
+ * @typedef {Object} LiveConnectStorageConfig
+ * @property {string} type - specifies where to store the liveConnect identifier. Allowed values: "cookie" or "html5" (local storage). Default: "cookie"
+ * @property {string} name - specifies the name of the liveConnect identifier. Default: "_li_duid"
+ * @property {number} expires - number of days to store the liveConnect identifier. Default: 30
+ */
+
+/**
+ * @typedef {Object} LiveConnectConfig
+ * @property {(string[]|undefined)} scrapedIdentifiers - cookie names or local storage item names to be sent along with the tracking request
+ * @property {(string|undefined)} providedFirstPartyIdentifier - the cookie name or the local storage item name of the provided first party identifier
+ * @property {LiveConnectStorageConfig} storage - specifies way to store the liveConnect identifier
+ */
+
+/**
+ * @typedef {Object} NotValidatedLiveConnectStorageConfig
+ * @property {string|undefined} type - specifies where to store the liveConnect identifier. Allowed values: "cookie" or "html5" (local storage)
+ * @property {string|undefined} name - specifies the name of the liveConnect identifier
+ * @property {number|undefined} expires - number of days to store the liveConnect identifier
+ */
+
+/**
+ * @typedef {Object} NotValidatedLiveConnectConfig
+ * @property {(string[]|undefined)} scrapedIdentifiers - cookie names or local storage item names to be sent along with the tracking request
+ * @property {(string|undefined)} providedFirstPartyIdentifier - the cookie name or the local storage item name of the provided first party identifier
+ * @property {NotValidatedLiveConnectStorageConfig} storage - specifies way to store the liveConnect identifier
+ */
+
+
 import {hook} from '../src/hook';
 import {config} from '../src/config';
 import * as utils from '../src/utils';
@@ -7,12 +41,14 @@ import {hasGDPRConsent} from './userId/gdprUtils';
 import {detectPrng, factory} from 'ulid/dist/index';
 
 const prng = detectPrng(true);
+/** Generator of ULID identifiers. Falls back to insecure `Math.random` identifiers when `window.crypto` is not present in browser. */
 const ulid = factory(prng);
 
 const COOKIE = 'cookie';
 const LOCAL_STORAGE = 'html5';
-
 const LIVE_PIXEL_URL = '//rp.liadm.com/p';
+
+/** @type {LiveConnectConfig} */
 const CONFIG = {
   SCRAPED_IDENTIFIERS: 'scrapedIdentifiers',
   PROVIDED_FIRST_PARTY_IDENTIFIER: 'providedFirstPartyIdentifier',
@@ -33,27 +69,48 @@ const CONFIG = {
   }
 };
 
+// init the liveConnect hook to happen before the `requestBids` hook
 init();
 
+/**
+ * Adds the liveConnect hook to happen before the `requestBids` hook and after the `consentManagement` hook
+ */
 export function init() {
   // priority value 40 will load after consentManagement with a priority of 50
   $$PREBID_GLOBAL$$.requestBids.before(liveConnectHook, 40);
 }
 
+/**
+ * The global function to trigger the liveConnect pixel call.
+ */
 $$PREBID_GLOBAL$$.liveConnect = function () {
   $$PREBID_GLOBAL$$.liveConnectHook({});
 };
 
+/**
+ * The liveConnect hook that triggers a pixel call. Happens either after `$$PREBID_GLOBAL$$.liveConnect` or `$$PREBID_GLOBAL$$.requestBids`
+ */
 $$PREBID_GLOBAL$$.liveConnectHook = hook('async', function () {
   liveConnectHook();
 }, 'liveConnect');
 
+/**
+ * The flag that is used to ensure that pixel is called only once per script load.
+ * @type {boolean}
+ */
 let isPixelFired = false;
 
+/**
+ * Resets the flag to enable multiple calls to liveConnect pixel. This function is used in tests.
+ */
 export function resetPixel() {
   isPixelFired = false;
 }
 
+/**
+ * This function sends the liveConnect pixel call.
+ * It does not send the pixel call if the pixel has already been triggered or the gdpr consent has not been given.
+ */
 function liveConnectHook() {
   if (!isPixelFired) {
     if (hasGDPRConsent(gdprDataHandler.getConsentData())) {
@@ -63,6 +120,9 @@ function liveConnectHook() {
   }
 }
 
+/**
+ * This function sends the liveConnect pixel call.
+ */
 function sendLiveConnectPixel() {
   const validConfig = validateConfig(config.getConfig('liveConnect'));
   const pageUrl = encodeURIComponent(getPageUrl());
@@ -82,6 +142,11 @@ function sendLiveConnectPixel() {
   utils.triggerPixel(pixelUri);
 }
 
+/**
+ * Validates the liveConnect config. Sets the config values to be default values when they are not provided or invalid.
+ * @param {NotValidatedLiveConnectConfig} config
+ * @returns {LiveConnectConfig}
+ */
 function validateConfig(config) {
   const validConfig = {
     storage: {}
@@ -107,18 +172,42 @@ function validateConfig(config) {
   return validConfig;
 }
 
+/**
+ * Validates the given value against the function.
+ * If the value is valid - the function returns this value.
+ * If the value is invalid - the function returns the default value.
+ * @param {*} val value to check
+ * @param {function} check function that validates the value
+ * @param {*} defaultVal the default value
+ * @returns {*} or the default value
+ */
 function validOrDefault(val, check, defaultVal) {
   return check(val) ? val : defaultVal;
 }
 
+/**
+ * Checks if the argument is an array of strings.
+ * @param val value to be validated
+ * @returns {Boolean} true - if the value is an array of string. Else - otherwise
+ */
 function isArrayOfStrings(val) {
   return (utils.isArray(val)) && (val.every(v => utils.isStr(v)));
 }
 
+/**
+ * The url of the current page
+ * @returns {string} The current page url or the referrer if the js is executed inside an iFrame
+ */
 function getPageUrl() {
   return utils.inIframe() ? document.referrer : window.location.href;
 }
 
+/**
+ * Get the stored duid (liveConnect id) value from cookie or local storage.
+ * Stores the new duid if it has not been stored. Updates the expiration if the duid has been set.
+ * @param {LiveConnectConfig} validConfig
+ * @returns {string} duid
+ */
 function getDuid(validConfig) {
   let duid = getStoredDuid(validConfig.storage);
   if (!duid) {
@@ -128,6 +217,11 @@ function getDuid(validConfig) {
   return duid;
 }
 
+/**
+ * Get the stored duid (liveConnect id) value from cookie or local storage.
+ * @param {LiveConnectStorageConfig} storage
+ * @returns {string} duid
+ */
 function getStoredDuid(storage) {
   let storedValue;
   try {
@@ -142,6 +236,11 @@ function getStoredDuid(storage) {
   return storedValue;
 }
 
+/**
+ * Get a value from local storage by name if it is not expired
+ * @param {string} name local storage item name
+ * @returns {string}
+ */
 function getFromLocalStorage(name) {
   const storedValueExp = localStorage.getItem(`${name}_exp`);
   let storedValue;
@@ -156,6 +255,11 @@ function getFromLocalStorage(name) {
   return storedValue;
 }
 
+/**
+ * Stores the duid into cookie or local storage
+ * @param {LiveConnectStorageConfig} storage
+ * @param {string} value duid value
+ */
 function storeDuid(storage, value) {
   try {
     const expiresStr = expiresString(storage[CONFIG.STORAGE.EXPIRES.KEY]);
@@ -170,12 +274,23 @@ function storeDuid(storage, value) {
   }
 }
 
+/**
+ * UTC formatted string of the expiration date
+ * @param {number} expirationDays ttl of the cookie/local storage item
+ * @returns {string} formatted date
+ */
 function expiresString(expirationDays) {
   let expiration = new Date();
   expiration.setDate(expiration.getDate() + expirationDays);
   return expiration.toUTCString();
 }
 
+/**
+ * Stores the cookie on the apex domain.
+ * @param {string} name cookie name
+ * @param {string} value cookie value
+ * @param {string} expiresStr UTC formatted expiration date string
+ */
 function storeCookieOnEtldPlus1(name, value, expiresStr) {
   const hostParts = window.location.hostname.split('.');
   if (!utils.cookiesAreEnabled()) {
@@ -191,6 +306,11 @@ function storeCookieOnEtldPlus1(name, value, expiresStr) {
   }
 }
 
+/**
+ * Gets pixel query params that contains first party identifiers.
+ * @param {LiveConnectConfig} validConfig
+ * @returns {string|undefined} concatenated query params
+ */
 function getProvidedFpiQueryParams(validConfig) {
   let fpi;
   if (validConfig[CONFIG.PROVIDED_FIRST_PARTY_IDENTIFIER]) {
@@ -202,6 +322,11 @@ function getProvidedFpiQueryParams(validConfig) {
   return fpi;
 }
 
+/**
+ * Reads an identifier from cookie or local storage
+ * @param {string} identifierName name of the identifier
+ * @returns {string | null} identifier value
+ */
 function getFromCookieOrLocalStorage(identifierName) {
   let identifierValue = utils.getCookie(identifierName);
   if (!identifierValue) {
@@ -210,6 +335,11 @@ function getFromCookieOrLocalStorage(identifierName) {
   return identifierValue;
 }
 
+/**
+ * Gets pixel query params that contains scraped identifiers.
+ * @param {LiveConnectConfig} validConfig
+ * @returns {string|null} concatenated query params
+ */
 function getScrapedIdentifiers(validConfig) {
   let identifiers;
   if (validConfig[CONFIG.SCRAPED_IDENTIFIERS]) {
