@@ -14,7 +14,6 @@
         pbjs.que = pbjs.que || [];
     </script>
 
-    <!--    <script async src="../../build/dist/prebid.js"></script>-->
     <script async src="../../build/dev/prebid.js"></script>
 
     <script>
@@ -55,16 +54,17 @@
                     }
                 },
                 liveConnect: {
-                    providedFirstPartyIdentifier: "blablabla",
-                    scrapedIdentifiers: ["bla1", "bla2"]
+                    providedFirstPartyIdentifier: "JSESSIONID",
+                    scrapedIdentifiers: ["pubcid", "_parrable_eid"],
+                    storage: {
+                        type: "html5",
+                        name: "my_liveConnect_cookie",
+                        expires: 60
+                    }
                 }
             });
             pbjs.liveConnect();
-            pbjs.requestBids({
-                bidsBackHandler: function () {
-                },
-                timeout: 700
-            });
+            pbjs.requestBids({});
         });
     </script>
     <title>LiveConnect</title>
