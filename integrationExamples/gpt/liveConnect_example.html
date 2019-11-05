@@ -54,12 +54,11 @@
                     }
                 },
                 liveConnect: {
-                    providedFirstPartyIdentifier: "JSESSIONID",
-                    scrapedIdentifiers: ["pubcid", "_parrable_eid"],
+                    userIdentifier: "pubcid",
+                    additionalUserIdentifiers: ["_parrable_eid"],
                     storage: {
-                        type: "html5",
-                        name: "my_liveConnect_cookie",
-                        expires: 60
+                        type: "cookie",
+                        expires: 600
                     }
                 }
             });

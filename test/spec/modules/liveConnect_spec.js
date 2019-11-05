@@ -10,7 +10,7 @@ const USER_IDENTIFIER_VALUE = 'testPfpiValue';
 const ADDITIONAL_IDENTIFIER_NAME = 'testIdentifier';
 const ADDITIONAL_IDENTIFIER_VALUE = 'testIdentifierValue';
 const EXPIRED_COOKIE_DATE = 'Thu, 01 Jan 1970 00:00:01 GMT';
-const BASIC_PIXEL_CALL = '//rp\\.liadm\\.com/p\\?duid=[0-9A-Z]{26}&tna=$prebid.version$&pu=http%3A%2F%2Flocalhost%3A[0-9]{4}%2F%3Fid%3D[0-9]+';
+const BASIC_PIXEL_CALL = 'https://rp\\.liadm\\.com/p\\?duid=[0-9A-Z]{26}&tna=$prebid.version$&pu=http%3A%2F%2Flocalhost%3A[0-9]{4}%2F%3Fid%3D[0-9]+';
 
 function liveConnectConfig(config) {
   return {

@@ -31,11 +31,10 @@ LiveConnect identifier has a changed name and expiration.
 ```javascript
 pbjs.setConfig({
     liveConnect: {
-        providedFirstPartyIdentifier: "JSESSIONID",
-        scrapedIdentifiers: ["pubcid", "_parrable_eid"],
+        userIdentifier: "pubcid",
+        additionalUserIdentifiers: ["_parrable_eid"],
         storage: {
             type: "cookie",
-            name: "my_liveConnect_cookie",
             expires: 60
         }
     }
@@ -47,7 +46,6 @@ pbjs.setConfig({
     liveConnect: {
         storage: {
             type: "html5",
-            name: "my_liveConnect_name",
             expires: 60
         }
     }

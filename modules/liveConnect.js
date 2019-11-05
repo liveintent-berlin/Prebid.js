@@ -44,7 +44,7 @@ const ulid = factory(prng);
 
 const COOKIE = 'cookie';
 const LOCAL_STORAGE = 'html5';
-const LIVE_PIXEL_URL = '//rp.liadm.com/p';
+const LIVE_PIXEL_URL = 'https://rp.liadm.com/p';
 const DUID_NAME = '_lc2_duid';
 
 /** @type {LiveConnectConfig} */
