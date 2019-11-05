@@ -50,7 +50,7 @@ const DUID_NAME = '_lc2_duid';
 /** @type {LiveConnectConfig} */
 const CONFIG = {
   SCRAPED_IDENTIFIERS: 'scrapedIdentifiers',
-  PROVIDED_FIRST_PARTY_IDENTIFIER: 'providedFirstPartyIdentifier',
+  USER_IDENTIFIER: 'userIdentifier',
   STORAGE: {
     TYPE: {
       KEY: 'type',
@@ -152,7 +152,7 @@ function validateConfig(config) {
   if (!config) return validConfig;
 
   validConfig[CONFIG.SCRAPED_IDENTIFIERS] = validOrDefault(config[CONFIG.SCRAPED_IDENTIFIERS], isArrayOfStrings, []);
-  validConfig[CONFIG.PROVIDED_FIRST_PARTY_IDENTIFIER] = validOrDefault(config[CONFIG.PROVIDED_FIRST_PARTY_IDENTIFIER], utils.isStr, null);
+  validConfig[CONFIG.USER_IDENTIFIER] = validOrDefault(config[CONFIG.USER_IDENTIFIER], utils.isStr, null);
 
   if (utils.isPlainObject(config.storage)) {
     validConfig.storage[CONFIG.STORAGE.TYPE.KEY] = validOrDefault(
@@ -306,10 +306,10 @@ function storeCookieOnEtldPlus1(name, value, expiresStr) {
  */
 function getProvidedFpiQueryParams(validConfig) {
   let fpi;
-  if (validConfig[CONFIG.PROVIDED_FIRST_PARTY_IDENTIFIER]) {
-    const providedFirstPartyIdentifier = getFromCookieOrLocalStorage(validConfig[CONFIG.PROVIDED_FIRST_PARTY_IDENTIFIER]);
+  if (validConfig[CONFIG.USER_IDENTIFIER]) {
+    const providedFirstPartyIdentifier = getFromCookieOrLocalStorage(validConfig[CONFIG.USER_IDENTIFIER]);
     if (providedFirstPartyIdentifier) {
-      fpi = `pfpi=${providedFirstPartyIdentifier}&fpn=${validConfig[CONFIG.PROVIDED_FIRST_PARTY_IDENTIFIER]}`;
+      fpi = `pfpi=${providedFirstPartyIdentifier}&fpn=${validConfig[CONFIG.USER_IDENTIFIER]}`;
     }
   }
   return fpi;

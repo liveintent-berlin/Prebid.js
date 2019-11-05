@@ -5,8 +5,8 @@ import {resetConsentData} from 'modules/consentManagement';
 
 const expect = require('chai').expect;
 
-const PROVIDED_FPI_NAME = 'testPfpi';
-const PROVIDED_FPI_VALUE = 'testPfpiValue';
+const USER_IDENTIFIER_NAME = 'testPfpi';
+const USER_IDENTIFIER_VALUE = 'testPfpiValue';
 const SCRAPED_IDENTIFIER_NAME = 'testIdentifier';
 const SCRAPED_IDENTIFIER_VALUE = 'testIdentifierValue';
 const EXPIRED_COOKIE_DATE = 'Thu, 01 Jan 1970 00:00:01 GMT';
@@ -29,9 +29,9 @@ describe('LiveConnect', () => {
   afterEach(function () {
     $$PREBID_GLOBAL$$.requestBids.removeAll();
     config.resetConfig();
-    utils.setCookie(PROVIDED_FPI_NAME, '', EXPIRED_COOKIE_DATE);
+    utils.setCookie(USER_IDENTIFIER_NAME, '', EXPIRED_COOKIE_DATE);
     utils.setCookie(SCRAPED_IDENTIFIER_NAME, '', EXPIRED_COOKIE_DATE);
-    localStorage.removeItem(PROVIDED_FPI_NAME);
+    localStorage.removeItem(USER_IDENTIFIER_NAME);
     localStorage.removeItem(SCRAPED_IDENTIFIER_NAME);
     liveConnect.resetPixel();
     utils.triggerPixel.restore();
@@ -151,27 +151,27 @@ describe('LiveConnect', () => {
       expect(utils.setCookie.callCount).to.equal(1);
     });
 
-    it('should be sent to pixel endpoint when the provided fpi is set into cookie', () => {
-      utils.setCookie(PROVIDED_FPI_NAME, PROVIDED_FPI_VALUE, (new Date(Date.now() + 60000).toUTCString()));
-      config.setConfig(liveConnectConfig({providedFirstPartyIdentifier: PROVIDED_FPI_NAME}));
+    it('should be sent to pixel endpoint when the user identifier is set into cookie', () => {
+      utils.setCookie(USER_IDENTIFIER_NAME, USER_IDENTIFIER_VALUE, (new Date(Date.now() + 60000).toUTCString()));
+      config.setConfig(liveConnectConfig({userIdentifier: USER_IDENTIFIER_NAME}));
 
       $$PREBID_GLOBAL$$.liveConnect();
 
       expect(utils.triggerPixel.callCount).to.equal(1);
       expect(utils.triggerPixel.getCall(0).args[0]).to.exist.and.to.match(new RegExp(
-        BASIC_PIXEL_CALL + `&pfpi=${PROVIDED_FPI_VALUE}&fpn=${PROVIDED_FPI_NAME}`
+        BASIC_PIXEL_CALL + `&pfpi=${USER_IDENTIFIER_VALUE}&fpn=${USER_IDENTIFIER_NAME}`
       ));
     });
 
-    it('should be sent to pixel endpoint when the provided fpi is set into local storage', () => {
-      localStorage.setItem(PROVIDED_FPI_NAME, PROVIDED_FPI_VALUE);
-      config.setConfig(liveConnectConfig({providedFirstPartyIdentifier: PROVIDED_FPI_NAME}));
+    it('should be sent to pixel endpoint when the user identifier is set into local storage', () => {
+      localStorage.setItem(USER_IDENTIFIER_NAME, USER_IDENTIFIER_VALUE);
+      config.setConfig(liveConnectConfig({userIdentifier: USER_IDENTIFIER_NAME}));
 
       $$PREBID_GLOBAL$$.liveConnect();
 
       expect(utils.triggerPixel.callCount).to.equal(1);
       expect(utils.triggerPixel.getCall(0).args[0]).to.exist.and.to.match(new RegExp(
-        BASIC_PIXEL_CALL + `&pfpi=${PROVIDED_FPI_VALUE}&fpn=${PROVIDED_FPI_NAME}`
+        BASIC_PIXEL_CALL + `&pfpi=${USER_IDENTIFIER_VALUE}&fpn=${USER_IDENTIFIER_NAME}`
       ));
     });
 
@@ -199,16 +199,16 @@ describe('LiveConnect', () => {
       ));
     });
 
-    it('should be sent to pixel endpoint when the scraped identifier and provided fpi are set', () => {
+    it('should be sent to pixel endpoint when the scraped identifier and user identifier are set', () => {
       localStorage.setItem(SCRAPED_IDENTIFIER_NAME, SCRAPED_IDENTIFIER_VALUE);
-      localStorage.setItem(PROVIDED_FPI_NAME, PROVIDED_FPI_VALUE);
-      config.setConfig(liveConnectConfig({providedFirstPartyIdentifier: PROVIDED_FPI_NAME, scrapedIdentifiers: [SCRAPED_IDENTIFIER_NAME]}));
+      localStorage.setItem(USER_IDENTIFIER_NAME, USER_IDENTIFIER_VALUE);
+      config.setConfig(liveConnectConfig({userIdentifier: USER_IDENTIFIER_NAME, scrapedIdentifiers: [SCRAPED_IDENTIFIER_NAME]}));
 
       $$PREBID_GLOBAL$$.liveConnect();
 
       expect(utils.triggerPixel.callCount).to.equal(1);
       expect(utils.triggerPixel.getCall(0).args[0]).to.exist.and.to.match(new RegExp(
-        BASIC_PIXEL_CALL + `&pfpi=${PROVIDED_FPI_VALUE}&fpn=${PROVIDED_FPI_NAME}&ext_${SCRAPED_IDENTIFIER_NAME}=${SCRAPED_IDENTIFIER_VALUE}`
+        BASIC_PIXEL_CALL + `&pfpi=${USER_IDENTIFIER_VALUE}&fpn=${USER_IDENTIFIER_NAME}&ext_${SCRAPED_IDENTIFIER_NAME}=${SCRAPED_IDENTIFIER_VALUE}`
       ));
     });
 
