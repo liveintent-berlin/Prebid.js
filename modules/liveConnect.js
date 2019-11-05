@@ -63,7 +63,7 @@ const CONFIG = {
     },
     EXPIRES: {
       KEY: 'expires',
-      DEFAULT: 30
+      DEFAULT: 730
     }
   }
 };
