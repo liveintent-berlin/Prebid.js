@@ -7,8 +7,8 @@ const expect = require('chai').expect;
 
 const USER_IDENTIFIER_NAME = 'testPfpi';
 const USER_IDENTIFIER_VALUE = 'testPfpiValue';
-const SCRAPED_IDENTIFIER_NAME = 'testIdentifier';
-const SCRAPED_IDENTIFIER_VALUE = 'testIdentifierValue';
+const ADDITIONAL_IDENTIFIER_NAME = 'testIdentifier';
+const ADDITIONAL_IDENTIFIER_VALUE = 'testIdentifierValue';
 const EXPIRED_COOKIE_DATE = 'Thu, 01 Jan 1970 00:00:01 GMT';
 const BASIC_PIXEL_CALL = '//rp\\.liadm\\.com/p\\?duid=[0-9A-Z]{26}&tna=$prebid.version$&pu=http%3A%2F%2Flocalhost%3A[0-9]{4}%2F%3Fid%3D[0-9]+';
 
@@ -30,9 +30,9 @@ describe('LiveConnect', () => {
     $$PREBID_GLOBAL$$.requestBids.removeAll();
     config.resetConfig();
     utils.setCookie(USER_IDENTIFIER_NAME, '', EXPIRED_COOKIE_DATE);
-    utils.setCookie(SCRAPED_IDENTIFIER_NAME, '', EXPIRED_COOKIE_DATE);
+    utils.setCookie(ADDITIONAL_IDENTIFIER_NAME, '', EXPIRED_COOKIE_DATE);
     localStorage.removeItem(USER_IDENTIFIER_NAME);
-    localStorage.removeItem(SCRAPED_IDENTIFIER_NAME);
+    localStorage.removeItem(ADDITIONAL_IDENTIFIER_NAME);
     liveConnect.resetPixel();
     utils.triggerPixel.restore();
     utils.setCookie.restore();
@@ -175,40 +175,40 @@ describe('LiveConnect', () => {
       ));
     });
 
-    it('should be sent to pixel endpoint when the scraped identifier is set into cookie', () => {
-      utils.setCookie(SCRAPED_IDENTIFIER_NAME, SCRAPED_IDENTIFIER_VALUE, (new Date(Date.now() + 60000).toUTCString()));
-      config.setConfig(liveConnectConfig({scrapedIdentifiers: [SCRAPED_IDENTIFIER_NAME]}));
+    it('should be sent to pixel endpoint when the additional identifier is set into cookie', () => {
+      utils.setCookie(ADDITIONAL_IDENTIFIER_NAME, ADDITIONAL_IDENTIFIER_VALUE, (new Date(Date.now() + 60000).toUTCString()));
+      config.setConfig(liveConnectConfig({additionalUserIdentifiers: [ADDITIONAL_IDENTIFIER_NAME]}));
 
       $$PREBID_GLOBAL$$.liveConnect();
 
       expect(utils.triggerPixel.callCount).to.equal(1);
       expect(utils.triggerPixel.getCall(0).args[0]).to.exist.and.to.match(new RegExp(
-        BASIC_PIXEL_CALL + `&ext_${SCRAPED_IDENTIFIER_NAME}=${SCRAPED_IDENTIFIER_VALUE}`
+        BASIC_PIXEL_CALL + `&ext_${ADDITIONAL_IDENTIFIER_NAME}=${ADDITIONAL_IDENTIFIER_VALUE}`
       ));
     });
 
-    it('should be sent to pixel endpoint when the scraped identifier is set into local storage', () => {
-      localStorage.setItem(SCRAPED_IDENTIFIER_NAME, SCRAPED_IDENTIFIER_VALUE);
-      config.setConfig(liveConnectConfig({scrapedIdentifiers: [SCRAPED_IDENTIFIER_NAME]}));
+    it('should be sent to pixel endpoint when the additional identifier is set into local storage', () => {
+      localStorage.setItem(ADDITIONAL_IDENTIFIER_NAME, ADDITIONAL_IDENTIFIER_VALUE);
+      config.setConfig(liveConnectConfig({additionalUserIdentifiers: [ADDITIONAL_IDENTIFIER_NAME]}));
 
       $$PREBID_GLOBAL$$.liveConnect();
 
       expect(utils.triggerPixel.callCount).to.equal(1);
       expect(utils.triggerPixel.getCall(0).args[0]).to.exist.and.to.match(new RegExp(
-        BASIC_PIXEL_CALL + `&ext_${SCRAPED_IDENTIFIER_NAME}=${SCRAPED_IDENTIFIER_VALUE}`
+        BASIC_PIXEL_CALL + `&ext_${ADDITIONAL_IDENTIFIER_NAME}=${ADDITIONAL_IDENTIFIER_VALUE}`
       ));
     });
 
-    it('should be sent to pixel endpoint when the scraped identifier and user identifier are set', () => {
-      localStorage.setItem(SCRAPED_IDENTIFIER_NAME, SCRAPED_IDENTIFIER_VALUE);
+    it('should be sent to pixel endpoint when the additional identifier and user identifier are set', () => {
+      localStorage.setItem(ADDITIONAL_IDENTIFIER_NAME, ADDITIONAL_IDENTIFIER_VALUE);
       localStorage.setItem(USER_IDENTIFIER_NAME, USER_IDENTIFIER_VALUE);
-      config.setConfig(liveConnectConfig({userIdentifier: USER_IDENTIFIER_NAME, scrapedIdentifiers: [SCRAPED_IDENTIFIER_NAME]}));
+      config.setConfig(liveConnectConfig({userIdentifier: USER_IDENTIFIER_NAME, additionalUserIdentifiers: [ADDITIONAL_IDENTIFIER_NAME]}));
 
       $$PREBID_GLOBAL$$.liveConnect();
 
       expect(utils.triggerPixel.callCount).to.equal(1);
       expect(utils.triggerPixel.getCall(0).args[0]).to.exist.and.to.match(new RegExp(
-        BASIC_PIXEL_CALL + `&pfpi=${USER_IDENTIFIER_VALUE}&fpn=${USER_IDENTIFIER_NAME}&ext_${SCRAPED_IDENTIFIER_NAME}=${SCRAPED_IDENTIFIER_VALUE}`
+        BASIC_PIXEL_CALL + `&pfpi=${USER_IDENTIFIER_VALUE}&fpn=${USER_IDENTIFIER_NAME}&ext_${ADDITIONAL_IDENTIFIER_NAME}=${ADDITIONAL_IDENTIFIER_VALUE}`
       ));
     });
 

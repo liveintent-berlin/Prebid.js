@@ -49,7 +49,7 @@ const DUID_NAME = '_lc2_duid';
 
 /** @type {LiveConnectConfig} */
 const CONFIG = {
-  SCRAPED_IDENTIFIERS: 'scrapedIdentifiers',
+  ADDITIONAL_USER_IDENTIFIERS: 'additionalUserIdentifiers',
   USER_IDENTIFIER: 'userIdentifier',
   STORAGE: {
     TYPE: {
@@ -151,7 +151,7 @@ function validateConfig(config) {
 
   if (!config) return validConfig;
 
-  validConfig[CONFIG.SCRAPED_IDENTIFIERS] = validOrDefault(config[CONFIG.SCRAPED_IDENTIFIERS], isArrayOfStrings, []);
+  validConfig[CONFIG.ADDITIONAL_USER_IDENTIFIERS] = validOrDefault(config[CONFIG.ADDITIONAL_USER_IDENTIFIERS], isArrayOfStrings, []);
   validConfig[CONFIG.USER_IDENTIFIER] = validOrDefault(config[CONFIG.USER_IDENTIFIER], utils.isStr, null);
 
   if (utils.isPlainObject(config.storage)) {
@@ -335,8 +335,8 @@ function getFromCookieOrLocalStorage(identifierName) {
  */
 function getScrapedIdentifiers(validConfig) {
   let identifiers;
-  if (validConfig[CONFIG.SCRAPED_IDENTIFIERS]) {
-    identifiers = validConfig[CONFIG.SCRAPED_IDENTIFIERS]
+  if (validConfig[CONFIG.ADDITIONAL_USER_IDENTIFIERS]) {
+    identifiers = validConfig[CONFIG.ADDITIONAL_USER_IDENTIFIERS]
       .map(identifierName => {
         let identifierValue = getFromCookieOrLocalStorage(identifierName);
         return identifierValue ? `ext_${identifierName}=${identifierValue}` : '';
