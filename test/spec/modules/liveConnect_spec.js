@@ -69,17 +69,8 @@ describe('LiveConnect', () => {
       expect(utils.setCookie.getCall(0).args[0]).to.exist.and.to.equal('_lc2_duid');
     });
 
-    it('should be set to cookie with custom name', () => {
-      config.setConfig(liveConnectConfig({storage: {name: 'custom_name'}}));
-
-      $$PREBID_GLOBAL$$.liveConnect();
-
-      expect(utils.setCookie.callCount).to.equal(1);
-      expect(utils.setCookie.getCall(0).args[0]).to.exist.and.to.equal('custom_name');
-    });
-
     it('should be set to local storage identifier', () => {
-      config.setConfig(liveConnectConfig({storage: {type: 'html5'}}));
+      config.setConfig(liveConnectConfig({storage: {type: 'html5', expires: 23}}));
 
       $$PREBID_GLOBAL$$.liveConnect();
 
@@ -102,17 +93,6 @@ describe('LiveConnect', () => {
       expect(localStorage.setItem.getCall(0).args[0]).to.exist.and.to.equal('_lc2_duid_exp');
       expect(localStorage.setItem.getCall(1).args[0]).to.exist.and.to.equal('_lc2_duid');
       expect(localStorage.setItem.getCall(1).args[1]).to.exist.and.to.equal('01DRV0Z3SYRKV68NFAB40TN3EE');
-    });
-
-    it('should be set to local storage identifier with custom name', () => {
-      config.setConfig(liveConnectConfig({storage: {type: 'html5', name: 'custom_name', expires: 23}}));
-
-      $$PREBID_GLOBAL$$.liveConnect();
-
-      expect(utils.setCookie.callCount).to.equal(0);
-      expect(localStorage.setItem.callCount).to.equal(2);
-      expect(localStorage.setItem.getCall(0).args[0]).to.exist.and.to.equal('custom_name_exp');
-      expect(localStorage.setItem.getCall(1).args[0]).to.exist.and.to.equal('custom_name');
     });
 
     it('should be set only once', () => {

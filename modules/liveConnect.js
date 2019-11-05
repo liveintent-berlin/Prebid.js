@@ -6,7 +6,6 @@
 /**
  * @typedef {Object} LiveConnectStorageConfig
  * @property {string} type - specifies where to store the liveConnect identifier. Allowed values: "cookie" or "html5" (local storage). Default: "cookie"
- * @property {string} name - specifies the name of the liveConnect identifier. Default: "_li_duid"
  * @property {number} expires - number of days to store the liveConnect identifier. Default: 30
  */
 
@@ -46,6 +45,7 @@ const ulid = factory(prng);
 const COOKIE = 'cookie';
 const LOCAL_STORAGE = 'html5';
 const LIVE_PIXEL_URL = '//rp.liadm.com/p';
+const DUID_NAME = '_lc2_duid';
 
 /** @type {LiveConnectConfig} */
 const CONFIG = {
@@ -56,10 +56,6 @@ const CONFIG = {
       KEY: 'type',
       ALLOWED: [COOKIE, LOCAL_STORAGE],
       DEFAULT: COOKIE
-    },
-    NAME: {
-      KEY: 'name',
-      DEFAULT: '_lc2_duid'
     },
     EXPIRES: {
       KEY: 'expires',
@@ -151,7 +147,6 @@ function validateConfig(config) {
     storage: {}
   };
   validConfig.storage[CONFIG.STORAGE.TYPE.KEY] = CONFIG.STORAGE.TYPE.DEFAULT;
-  validConfig.storage[CONFIG.STORAGE.NAME.KEY] = CONFIG.STORAGE.NAME.DEFAULT;
   validConfig.storage[CONFIG.STORAGE.EXPIRES.KEY] = CONFIG.STORAGE.EXPIRES.DEFAULT;
 
   if (!config) return validConfig;
@@ -165,7 +160,6 @@ function validateConfig(config) {
       v => utils.isStr(v) && CONFIG.STORAGE.TYPE.ALLOWED.includes(v),
       CONFIG.STORAGE.TYPE.DEFAULT
     );
-    validConfig.storage[CONFIG.STORAGE.NAME.KEY] = validOrDefault(config.storage[CONFIG.STORAGE.NAME.KEY], utils.isStr, CONFIG.STORAGE.NAME.DEFAULT);
     validConfig.storage[CONFIG.STORAGE.EXPIRES.KEY] = validOrDefault(config.storage[CONFIG.STORAGE.EXPIRES.KEY], utils.isNumber, CONFIG.STORAGE.EXPIRES.DEFAULT);
   }
   return validConfig;
@@ -225,9 +219,9 @@ function getStoredDuid(storage) {
   let storedValue;
   try {
     if (storage[CONFIG.STORAGE.TYPE.KEY] === COOKIE) {
-      storedValue = utils.getCookie(storage[CONFIG.STORAGE.NAME.KEY]);
+      storedValue = utils.getCookie(DUID_NAME);
     } else if (storage[CONFIG.STORAGE.TYPE.KEY] === LOCAL_STORAGE) {
-      storedValue = getFromLocalStorage(storage[CONFIG.STORAGE.NAME.KEY]);
+      storedValue = getFromLocalStorage(DUID_NAME);
     }
   } catch (e) {
     utils.logError(e);
@@ -263,10 +257,10 @@ function storeDuid(storage, value) {
   try {
     const expiresStr = expiresString(storage[CONFIG.STORAGE.EXPIRES.KEY]);
     if (storage[CONFIG.STORAGE.TYPE.KEY] === COOKIE) {
-      storeCookieOnEtldPlus1(storage[CONFIG.STORAGE.NAME.KEY], value, expiresStr);
+      storeCookieOnEtldPlus1(DUID_NAME, value, expiresStr);
     } else if (storage[CONFIG.STORAGE.TYPE.KEY] === LOCAL_STORAGE) {
-      localStorage.setItem(`${storage[CONFIG.STORAGE.NAME.KEY]}_exp`, expiresStr);
-      localStorage.setItem(storage[CONFIG.STORAGE.NAME.KEY], encodeURIComponent(value));
+      localStorage.setItem(`${DUID_NAME}_exp`, expiresStr);
+      localStorage.setItem(DUID_NAME, encodeURIComponent(value));
     }
   } catch (error) {
     utils.logError(error);
