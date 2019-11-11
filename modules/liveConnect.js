@@ -46,6 +46,7 @@ const COOKIE = 'cookie';
 const LOCAL_STORAGE = 'html5';
 const LIVE_PIXEL_URL = 'https://rp.liadm.com/p';
 const DUID_NAME = '_lc2_duid';
+const SHARED_DUID_NAME = '_li_duid';
 
 /** @type {LiveConnectConfig} */
 const CONFIG = {
@@ -109,7 +110,8 @@ export function resetPixel() {
 function liveConnectHook() {
   if (!isPixelFired) {
     if (hasGDPRConsent(gdprDataHandler.getConsentData())) {
-      sendLiveConnectPixel();
+      const duid = sendLiveConnectPixel();
+      trySettingSharedDuid(duid);
     }
     isPixelFired = true;
   }
@@ -129,12 +131,19 @@ function sendLiveConnectPixel() {
     pixelUri += `&${providedFpiQueryParams}`;
   }
 
-  const scrapedIdentifiers = getScrapedIdentifiers(validConfig);
-  if (scrapedIdentifiers) {
-    pixelUri += `&${scrapedIdentifiers}`;
+  const scrapedIdentifiersQeuryParams = getScrapedIdentifiers(validConfig);
+  if (scrapedIdentifiersQeuryParams) {
+    pixelUri += `&${scrapedIdentifiersQeuryParams}`;
+  }
+
+  const legacyDuidQueryParam = getLegacyDuidQueryParam();
+  if (legacyDuidQueryParam) {
+    pixelUri += `&${legacyDuidQueryParam}`;
   }
 
   utils.triggerPixel(pixelUri);
+
+  return duid;
 }
 
 /**
@@ -316,7 +325,7 @@ function getProvidedFpiQueryParams(validConfig) {
 }
 
 /**
- * Reads an identifier from cookie or local storage
+ * Reads an identifier from cookie or local storage.
  * @param {string} identifierName name of the identifier
  * @returns {string | null} identifier value
  */
@@ -329,7 +338,7 @@ function getFromCookieOrLocalStorage(identifierName) {
 }
 
 /**
- * Gets pixel query params that contains scraped identifiers.
+ * Gets pixel query params that contain scraped identifiers.
  * @param {LiveConnectConfig} validConfig
  * @returns {string|null} concatenated query params
  */
@@ -346,4 +355,41 @@ function getScrapedIdentifiers(validConfig) {
   }
 
   return identifiers && identifiers.length > 0 ? identifiers : null;
+}
+
+/**
+ * Gets pixel query param that contains a legacy duid.
+ * @returns {string} query param
+ */
+function getLegacyDuidQueryParam() {
+  let queryParam = '';
+  const legacyDuid = getLegacyDuid();
+  if (legacyDuid) {
+    queryParam = `lduid=${legacyDuid}`;
+  }
+  return queryParam;
+}
+
+/**
+ * Gets a value from _li_duid local storage item. If it contains uuid, then this is the legacy duid
+ * @returns {string|undefined} Legacy duid
+ */
+function getLegacyDuid() {
+  const duid = localStorage.getItem(SHARED_DUID_NAME);
+  let legacyDuid;
+  if (duid && duid.includes('-')) {
+    legacyDuid = duid;
+  }
+  return legacyDuid;
+}
+
+/**
+ * Update _li_duid value with the ulid duid if the previous value is not a legacy duid
+ * @param {string} duid
+ */
+function trySettingSharedDuid(duid) {
+  const legacyDuid = getLegacyDuid();
+  if (!legacyDuid) {
+    localStorage.setItem(SHARED_DUID_NAME, duid);
+  }
 }

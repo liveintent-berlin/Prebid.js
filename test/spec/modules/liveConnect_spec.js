@@ -33,6 +33,7 @@ describe('LiveConnect', () => {
     utils.setCookie(ADDITIONAL_IDENTIFIER_NAME, '', EXPIRED_COOKIE_DATE);
     localStorage.removeItem(USER_IDENTIFIER_NAME);
     localStorage.removeItem(ADDITIONAL_IDENTIFIER_NAME);
+    localStorage.removeItem('_li_duid');
     liveConnect.resetPixel();
     utils.triggerPixel.restore();
     utils.setCookie.restore();
@@ -46,6 +47,27 @@ describe('LiveConnect', () => {
 
       expect(utils.setCookie.callCount).to.equal(1);
       expect(utils.setCookie.getCall(0).args[0]).to.exist.and.to.equal('_lc2_duid');
+    });
+
+    it('should be set to cookie and shared local storage identifier', () => {
+      $$PREBID_GLOBAL$$.liveConnect();
+
+      expect(utils.setCookie.callCount).to.equal(1);
+      expect(utils.setCookie.getCall(0).args[0]).to.exist.and.to.equal('_lc2_duid');
+      expect(localStorage.setItem.callCount).to.equal(1);
+      expect(localStorage.setItem.getCall(0).args[0]).to.exist.and.to.equal('_li_duid');
+    });
+
+    it('should be set to cookie but not set to shared local storage identifier when there is a legady duid in shared local storage item', () => {
+      localStorage.setItem.restore();
+      localStorage.setItem('_li_duid', 'a-1234--519253bc-469f-43f4-8100-592803e07dc3');
+      sinon.spy(localStorage, 'setItem');
+
+      $$PREBID_GLOBAL$$.liveConnect();
+
+      expect(utils.setCookie.callCount).to.equal(1);
+      expect(utils.setCookie.getCall(0).args[0]).to.exist.and.to.equal('_lc2_duid');
+      expect(localStorage.setItem.callCount).to.equal(0);
     });
 
     it('should be reset to cookie when the duid has been already stored', () => {
@@ -75,9 +97,10 @@ describe('LiveConnect', () => {
       $$PREBID_GLOBAL$$.liveConnect();
 
       expect(utils.setCookie.callCount).to.equal(0);
-      expect(localStorage.setItem.callCount).to.equal(2);
+      expect(localStorage.setItem.callCount).to.equal(3);
       expect(localStorage.setItem.getCall(0).args[0]).to.exist.and.to.equal('_lc2_duid_exp');
       expect(localStorage.setItem.getCall(1).args[0]).to.exist.and.to.equal('_lc2_duid');
+      expect(localStorage.setItem.getCall(2).args[0]).to.exist.and.to.equal('_li_duid');
     });
 
     it('should be reset to local storage when the duid has been already stored', () => {
@@ -89,10 +112,11 @@ describe('LiveConnect', () => {
       $$PREBID_GLOBAL$$.liveConnect();
 
       expect(utils.setCookie.callCount).to.equal(0);
-      expect(localStorage.setItem.callCount).to.equal(2);
+      expect(localStorage.setItem.callCount).to.equal(3);
       expect(localStorage.setItem.getCall(0).args[0]).to.exist.and.to.equal('_lc2_duid_exp');
       expect(localStorage.setItem.getCall(1).args[0]).to.exist.and.to.equal('_lc2_duid');
       expect(localStorage.setItem.getCall(1).args[1]).to.exist.and.to.equal('01DRV0Z3SYRKV68NFAB40TN3EE');
+      expect(localStorage.setItem.getCall(2).args[0]).to.exist.and.to.equal('_li_duid');
     });
 
     it('should be set only once', () => {
@@ -149,6 +173,17 @@ describe('LiveConnect', () => {
       $$PREBID_GLOBAL$$.requestBids({});
 
       expect(utils.setCookie.callCount).to.equal(1);
+    });
+
+    it('should be sent to pixel endpoint when the legacy duid is set into local storage', () => {
+      localStorage.setItem('_li_duid', 'a-1234--519253bc-469f-43f4-8100-592803e07dc3');
+
+      $$PREBID_GLOBAL$$.liveConnect();
+
+      expect(utils.triggerPixel.callCount).to.equal(1);
+      expect(utils.triggerPixel.getCall(0).args[0]).to.exist.and.to.match(new RegExp(
+        BASIC_PIXEL_CALL + '&lduid=a-1234--519253bc-469f-43f4-8100-592803e07dc3'
+      ));
     });
 
     it('should be sent to pixel endpoint when the user identifier is set into cookie', () => {
