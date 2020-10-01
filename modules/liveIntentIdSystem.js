@@ -99,7 +99,7 @@ function initializeLiveConnect(configParams) {
   }
   const gdprConsent = gdprDataHandler.getConsentData()
   if (gdprConsent) {
-    liveConnectConfig.gdprApplies = gdprConsent.gdprApplies ? 1 : 0;
+    liveConnectConfig.gdprApplies = gdprConsent.gdprApplies;
     liveConnectConfig.gdprConsent = gdprConsent.consentString;
   }
 

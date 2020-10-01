@@ -84,7 +84,7 @@
  * @property {(string|undefined)} ajaxTimeout - the number of milliseconds a resolution request can take before automatically being terminated
  * @property {(array|undefined)} identifiersToResolve - the identifiers from either ls|cookie to be attached to the getId query
  * @property {(LiveIntentCollectConfig|undefined)} liCollectConfig - the config for LiveIntent's collect requests
- * @property {(string|undefined)} emailHash - the email hash of the user
+ * @property {(string|undefined)} emailHash - if provided, the hashed email address of a user
  */
 
 /**
