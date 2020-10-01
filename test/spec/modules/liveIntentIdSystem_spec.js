@@ -8,7 +8,6 @@ const defaultConfigParams = { publisherId: PUBLISHER_ID };
 const responseHeader = { 'Content-Type': 'application/json' }
 
 describe('LiveIntentId', function() {
-  let pixel = {};
   let logErrorStub;
   let uspConsentDataStub;
   let gdprConsentDataStub;
@@ -17,7 +16,7 @@ describe('LiveIntentId', function() {
   let imgStub;
 
   beforeEach(function() {
-    imgStub = sinon.stub(window, 'Image').returns(pixel);
+    imgStub = sinon.stub(utils, 'triggerPixel');
     getCookieStub = sinon.stub(storage, 'getCookie');
     getDataFromLocalStorageStub = sinon.stub(storage, 'getDataFromLocalStorage');
     logErrorStub = sinon.stub(utils, 'logError');
@@ -26,7 +25,6 @@ describe('LiveIntentId', function() {
   });
 
   afterEach(function() {
-    pixel = {};
     imgStub.restore();
     getCookieStub.restore();
     getDataFromLocalStorageStub.restore();
@@ -249,5 +247,11 @@ describe('LiveIntentId', function() {
       JSON.stringify({})
     );
     expect(callBackSpy.calledOnce).to.be.true;
+  });
+
+  it('should send an error when the cookie jar throws an unexpected error', function() {
+    getCookieStub.throws('CookieError', 'A message');
+    liveIntentIdSubmodule.getId(defaultConfigParams);
+    expect(imgStub.getCall(0).args[0]).to.match(/.*ae=.+/);
   });
 });

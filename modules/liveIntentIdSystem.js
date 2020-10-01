@@ -29,7 +29,7 @@ const calls = {
       }
     )
   },
-  pixelGet: triggerPixel
+  pixelGet: (url, onload) => triggerPixel(url, onload)
 }
 
 let eventFired = false;
