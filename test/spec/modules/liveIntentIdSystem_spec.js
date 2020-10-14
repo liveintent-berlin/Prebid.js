@@ -60,14 +60,14 @@ describe('LiveIntentId', function() {
       consentString: 'consentDataString'
     })
     liveIntentIdSubmodule.getId(defaultConfigParams);
-    expect(server.requests[0].url).to.match(/https:\/\/rp.liadm.com\/j\?wpn=prebid.*us_privacy=1YNY.*&gdpr=1&gdpr_consent=consentDataString.*/)
+    expect(server.requests[0].url).to.match(/https:\/\/rp.liadm.com\/j\?wpn=prebid.*us_privacy=1YNY.*&gdpr=1&gdpr_consent=consentDataString.*/);
   });
 
   it('should fire an event when getId and a hash is provided', function() {
-    liveIntentIdSubmodule.getId({
+    liveIntentIdSubmodule.getId({ params: {
       ...defaultConfigParams,
       emailHash: '58131bc547fb87af94cebdaf3102321f'
-    });
+    }});
     expect(server.requests[0].url).to.match(/https:\/\/rp.liadm.com\/j\?.*e=58131bc547fb87af94cebdaf3102321f.+/)
   });
 
@@ -81,8 +81,8 @@ describe('LiveIntentId', function() {
           collectorUrl: 'https://collector.liveintent.com'
         }
       }
-    });
-    expect(server.requests[0].url).to.match(/https:\/\/collector.liveintent.com\/j\?aid=a-0001&wpn=prebid.*/)
+    }});
+    expect(server.requests[0].url).to.match(/https:\/\/collector.liveintent.com\/j\?aid=a-0001&wpn=prebid.*/);
   });
 
   it('should initialize LiveConnect and emit an event with a privacy string when decode', function() {
@@ -96,11 +96,11 @@ describe('LiveIntentId', function() {
   });
 
   it('should fire an event when decode and a hash is provided', function() {
-    liveIntentIdSubmodule.decode({}, {
-      ...defaultConfigParams,
+    liveIntentIdSubmodule.decode({}, { params: {
+      ...defaultConfigParams.params,
       emailHash: '58131bc547fb87af94cebdaf3102321f'
-    });
-    expect(server.requests[0].url).to.match(/https:\/\/rp.liadm.com\/j\?.*e=58131bc547fb87af94cebdaf3102321f.+/)
+    }});
+    expect(server.requests[0].url).to.match(/https:\/\/rp.liadm.com\/j\?.*e=58131bc547fb87af94cebdaf3102321f.+/);
   });
 
   it('should not return a decoded identifier when the unifiedId is not present in the value', function() {
